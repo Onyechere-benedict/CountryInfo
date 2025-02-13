@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, Button } from 'react-native';
-import { ThemeContext } from './theme';
+import { ThemeContext } from './App';
 
 const CountryListScreen = ({ navigation }) => {
   const [countries, setCountries] = useState([]);
