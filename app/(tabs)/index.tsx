@@ -1,23 +1,21 @@
 import React, { useEffect, useState } from "react";
-import {
-	SafeAreaView,
-	View,
-	Text,
-	StyleSheet,
-	TextInput,
-	FlatList,
-	ActivityIndicator,
-	Image,
-	TouchableOpacity,
-	Modal,
-} from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, TextInput, FlatList, ActivityIndicator, Image, TouchableOpacity, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useTheme } from "@/context/ThemeContext";
 
+type Country = {
+	name: {
+		common: string;
+	};
+	cca3: string;
+	flag: string;
+	capital: string[];
+};
+
 export default function CountryListScreen() {
-	const [countries, setCountries] = useState([]);
-	const [filteredCountries, setFilteredCountries] = useState([]);
+	const [countries, setCountries] = useState<Country[]>([]);
+	const [filteredCountries, setFilteredCountries] = useState<Country[]>([]);
 	const [searchText, setSearchText] = useState("");
 	const [loading, setLoading] = useState(true);
 
@@ -27,8 +25,8 @@ export default function CountryListScreen() {
 	const [timeZoneModalVisible, setTimeZoneModalVisible] = useState(false);
 
 	// Track selected continents and time zones
-	const [selectedContinents, setSelectedContinents] = useState([]);
-	const [selectedTimeZones, setSelectedTimeZones] = useState([]);
+	const [selectedContinents, setSelectedContinents] = useState<string[]>([]);
+	const [selectedTimeZones, setSelectedTimeZones] = useState<string[]>([]);
 
 	const { theme, toggleTheme } = useTheme();
 	const router = useRouter();
@@ -37,11 +35,10 @@ export default function CountryListScreen() {
 	useEffect(() => {
 		fetch("https://restcountries.com/v3.1/all")
 			.then((response) => response.json())
-			.then((data) => {
+			.then((data: Country[]) => {
+				console.log(data);
 				// Sort countries alphabetically by common name
-				const sorted = data.sort((a, b) =>
-					a.name.common.localeCompare(b.name.common)
-				);
+				const sorted = data.sort((a, b) => a.name.common.localeCompare(b.name.common));
 				setCountries(sorted);
 				setFilteredCountries(sorted);
 				setLoading(false);
@@ -58,9 +55,7 @@ export default function CountryListScreen() {
 			setFilteredCountries(countries);
 		} else {
 			const lowerSearch = searchText.toLowerCase();
-			const filtered = countries.filter((country) =>
-				country.name.common.toLowerCase().includes(lowerSearch)
-			);
+			const filtered = countries.filter((country) => country.name.common.toLowerCase().includes(lowerSearch));
 			setFilteredCountries(filtered);
 		}
 	}, [searchText, countries]);
@@ -75,9 +70,9 @@ export default function CountryListScreen() {
 	}
 
 	// Render each country row
-	const renderItem = ({ item }) => {
+	const renderItem = ({ item }: { item: Country }) => {
 		const countryName = item?.name?.common || "Unknown";
-		const flagUrl = item?.flags?.png;
+		const flagUrl = item?.flag;
 		const capital = item?.capital?.[0] || "N/A";
 
 		return (
@@ -85,8 +80,8 @@ export default function CountryListScreen() {
 				style={styles.itemContainer}
 				onPress={() =>
 					router.push({
-						pathname: "/CountryDetails",
-						params: { country: encodeURIComponent(JSON.stringify(item)) },
+						pathname: "/CountryDetailsScreen",
+						params: { countryFromRoute: encodeURIComponent(JSON.stringify(item)) },
 					})
 				}
 			>
@@ -100,22 +95,12 @@ export default function CountryListScreen() {
 	};
 
 	// ====== CONTINENT LOGIC ======
-	const CONTINENTS = [
-		"Africa",
-		"Antarctica",
-		"Asia",
-		"Australia",
-		"Europe",
-		"North America",
-		"South America",
-	];
+	const CONTINENTS = ["Africa", "Antarctica", "Asia", "Australia", "Europe", "North America", "South America"];
 
-	const toggleContinent = (continent) => {
+	const toggleContinent = (continent: string) => {
 		if (selectedContinents.includes(continent)) {
 			// Remove it
-			setSelectedContinents((prev) =>
-				prev.filter((item) => item !== continent)
-			);
+			setSelectedContinents((prev) => prev.filter((item) => item !== continent));
 		} else {
 			// Add it
 			setSelectedContinents((prev) => [...prev, continent]);
@@ -142,7 +127,7 @@ export default function CountryListScreen() {
 		"GMT+12:00",
 	];
 
-	const toggleTimeZone = (tz) => {
+	const toggleTimeZone = (tz: string) => {
 		if (selectedTimeZones.includes(tz)) {
 			setSelectedTimeZones((prev) => prev.filter((item) => item !== tz));
 		} else {
@@ -155,28 +140,14 @@ export default function CountryListScreen() {
 	};
 
 	return (
-		<SafeAreaView
-			style={[
-				styles.container,
-				theme === "light" ? styles.lightBackground : styles.darkBackground,
-			]}
-		>
+		<SafeAreaView style={[styles.container, theme === "light" ? styles.lightBackground : styles.darkBackground]}>
 			{/* Header: Logo + Theme Toggle */}
 			<View style={styles.header}>
 				<Text style={styles.logo}>&explore.</Text>
 
 				<TouchableOpacity style={styles.themeToggle} onPress={toggleTheme}>
-					<Ionicons
-						name={theme === "light" ? "moon" : "sunny"}
-						size={20}
-						color={theme === "light" ? "#000" : "#fff"}
-					/>
-					<Text
-						style={[
-							styles.themeToggleText,
-							theme === "light" ? styles.darkText : styles.lightText,
-						]}
-					>
+					<Ionicons name={theme === "light" ? "moon" : "sunny"} size={20} color={theme === "light" ? "#000" : "#fff"} />
+					<Text style={[styles.themeToggleText, theme === "light" ? styles.darkText : styles.lightText]}>
 						{theme === "light" ? "Dark" : "Light"} Mode
 					</Text>
 				</TouchableOpacity>
@@ -197,37 +168,21 @@ export default function CountryListScreen() {
 				</View>
 
 				{/* Filter Button => Show first modal */}
-				<TouchableOpacity
-					style={styles.filterButton}
-					onPress={() => setFilterVisible(true)}
-				>
+				<TouchableOpacity style={styles.filterButton} onPress={() => setFilterVisible(true)}>
 					<Ionicons name="filter" size={16} color="#000" />
 					<Text style={styles.filterText}>Filter</Text>
 				</TouchableOpacity>
 			</View>
 
 			{/* Country List */}
-			<FlatList
-				data={filteredCountries}
-				keyExtractor={(item) => item.cca3}
-				renderItem={renderItem}
-				contentContainerStyle={styles.listContent}
-			/>
+			<FlatList data={filteredCountries} keyExtractor={(item) => item.cca3} renderItem={renderItem} contentContainerStyle={styles.listContent} />
 
 			{/* ====== FILTER MODAL ====== */}
-			<Modal
-				visible={filterVisible}
-				animationType="slide"
-				transparent
-				onRequestClose={() => setFilterVisible(false)}
-			>
+			<Modal visible={filterVisible} animationType="slide" transparent onRequestClose={() => setFilterVisible(false)}>
 				<View style={styles.modalContainer}>
 					<View style={styles.modalContent}>
 						{/* Close Button */}
-						<TouchableOpacity
-							style={styles.closeButton}
-							onPress={() => setFilterVisible(false)}
-						>
+						<TouchableOpacity style={styles.closeButton} onPress={() => setFilterVisible(false)}>
 							<Ionicons name="close" size={20} color="#000" />
 						</TouchableOpacity>
 
@@ -261,19 +216,11 @@ export default function CountryListScreen() {
 			</Modal>
 
 			{/* ====== CONTINENT MODAL ====== */}
-			<Modal
-				visible={continentModalVisible}
-				animationType="slide"
-				transparent
-				onRequestClose={() => setContinentModalVisible(false)}
-			>
+			<Modal visible={continentModalVisible} animationType="slide" transparent onRequestClose={() => setContinentModalVisible(false)}>
 				<View style={styles.modalContainer}>
 					<View style={styles.modalContent}>
 						{/* Close Button */}
-						<TouchableOpacity
-							style={styles.closeButton}
-							onPress={() => setContinentModalVisible(false)}
-						>
+						<TouchableOpacity style={styles.closeButton} onPress={() => setContinentModalVisible(false)}>
 							<Ionicons name="close" size={20} color="#000" />
 						</TouchableOpacity>
 
@@ -283,27 +230,16 @@ export default function CountryListScreen() {
 						{CONTINENTS.map((continent) => {
 							const selected = selectedContinents.includes(continent);
 							return (
-								<TouchableOpacity
-									key={continent}
-									style={styles.filterOption}
-									onPress={() => toggleContinent(continent)}
-								>
+								<TouchableOpacity key={continent} style={styles.filterOption} onPress={() => toggleContinent(continent)}>
 									<Text style={styles.filterOptionText}>{continent}</Text>
-									<Ionicons
-										name={selected ? "checkbox" : "checkbox-outline"}
-										size={20}
-										color="#000"
-									/>
+									<Ionicons name={selected ? "checkbox" : "checkbox-outline"} size={20} color="#000" />
 								</TouchableOpacity>
 							);
 						})}
 
 						{/* Footer Buttons */}
 						<View style={styles.modalFooter}>
-							<TouchableOpacity
-								style={styles.resetButton}
-								onPress={resetContinents}
-							>
+							<TouchableOpacity style={styles.resetButton} onPress={resetContinents}>
 								<Text style={styles.resetText}>Reset</Text>
 							</TouchableOpacity>
 
@@ -322,19 +258,11 @@ export default function CountryListScreen() {
 			</Modal>
 
 			{/* ====== TIME ZONE MODAL ====== */}
-			<Modal
-				visible={timeZoneModalVisible}
-				animationType="slide"
-				transparent
-				onRequestClose={() => setTimeZoneModalVisible(false)}
-			>
+			<Modal visible={timeZoneModalVisible} animationType="slide" transparent onRequestClose={() => setTimeZoneModalVisible(false)}>
 				<View style={styles.modalContainer}>
 					<View style={styles.modalContent}>
 						{/* Close Button */}
-						<TouchableOpacity
-							style={styles.closeButton}
-							onPress={() => setTimeZoneModalVisible(false)}
-						>
+						<TouchableOpacity style={styles.closeButton} onPress={() => setTimeZoneModalVisible(false)}>
 							<Ionicons name="close" size={20} color="#000" />
 						</TouchableOpacity>
 
@@ -344,27 +272,16 @@ export default function CountryListScreen() {
 						{TIMEZONES.map((tz) => {
 							const selected = selectedTimeZones.includes(tz);
 							return (
-								<TouchableOpacity
-									key={tz}
-									style={styles.filterOption}
-									onPress={() => toggleTimeZone(tz)}
-								>
+								<TouchableOpacity key={tz} style={styles.filterOption} onPress={() => toggleTimeZone(tz)}>
 									<Text style={styles.filterOptionText}>{tz}</Text>
-									<Ionicons
-										name={selected ? "checkbox" : "checkbox-outline"}
-										size={20}
-										color="#000"
-									/>
+									<Ionicons name={selected ? "checkbox" : "checkbox-outline"} size={20} color="#000" />
 								</TouchableOpacity>
 							);
 						})}
 
 						{/* Footer Buttons */}
 						<View style={styles.modalFooter}>
-							<TouchableOpacity
-								style={styles.resetButton}
-								onPress={resetTimeZones}
-							>
+							<TouchableOpacity style={styles.resetButton} onPress={resetTimeZones}>
 								<Text style={styles.resetText}>Reset</Text>
 							</TouchableOpacity>
 

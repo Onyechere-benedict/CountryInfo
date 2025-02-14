@@ -1,19 +1,28 @@
 import React, { useContext } from "react";
-import { View, Text, Image, StyleSheet, ScrollView } from "react-native";
+import { View, Text, Image, StyleSheet, ScrollView, SafeAreaView } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { useTheme } from "@/context/ThemeContext";
 
 const CountryDetailsScreen = () => {
 	const { countryFromRoute } = useLocalSearchParams();
-	const country = JSON.parse(decodeURIComponent(countryFromRoute as string));
+	// const country = JSON.parse(decodeURIComponent(countryFromRoute as string));
+	const country = countryFromRoute ? JSON.parse(decodeURIComponent(countryFromRoute as string)) : null;
+	console.log("Country: ", country);
 
 	// const { country } = route.params;
+	if (!country) {
+		return (
+			<SafeAreaView style={styles.errorContainer}>
+				<Text style={styles.errorText}>Country data not found</Text>
+			</SafeAreaView>
+		);
+	}
 
 	return (
 		<ScrollView style={[styles.container && { backgroundColor: "#333" }]}>
-			<Text style={[styles.name && { color: "white" }]}>{country.name.common}</Text>
+			<Text style={[styles.name && { color: "white" }]}>{country.name?.common}</Text>
 
-			{country.flags && country.flags.png && <Image source={{ uri: country.flags.png }} style={styles.flag} />}
+			{country.flags && country.flags.png && <Image source={{ uri: country.flags?.png }} style={styles.flag} />}
 
 			<Text style={[styles.label && { color: "white" }]}>Capital:</Text>
 			<Text style={[styles.info && { color: "white" }]}>{country.capital ? country.capital[0] : "N/A"}</Text>
