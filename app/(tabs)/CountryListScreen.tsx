@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, Button } from "react-native";
-import { ThemeContext } from "./App";
+import { ThemeContext } from "./index";
 import { useRouter } from "expo-router";
 
 const CountryListScreen = () => {

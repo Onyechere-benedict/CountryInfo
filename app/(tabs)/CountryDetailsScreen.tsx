@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { View, Text, Image, StyleSheet, ScrollView } from "react-native";
-import { ThemeContext } from "./App";
+import { ThemeContext } from "./index";
 import { useLocalSearchParams } from "expo-router";
 
 const CountryDetailsScreen = () => {
